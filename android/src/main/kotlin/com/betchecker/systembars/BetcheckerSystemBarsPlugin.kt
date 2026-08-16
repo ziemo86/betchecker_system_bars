@@ -16,6 +16,8 @@ class BetcheckerSystemBarsPlugin : FlutterPlugin, ActivityAware {
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             binding.activity.window.isNavigationBarContrastEnforced = false
+            binding.activity.window.navigationBarColor =
+    android.graphics.Color.parseColor("#EF8439")
         }
     }
 
@@ -25,6 +27,8 @@ class BetcheckerSystemBarsPlugin : FlutterPlugin, ActivityAware {
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             binding.activity.window.isNavigationBarContrastEnforced = false
+            binding.activity.window.navigationBarColor =
+    android.graphics.Color.parseColor("#EF8439")
         }
     }
 
