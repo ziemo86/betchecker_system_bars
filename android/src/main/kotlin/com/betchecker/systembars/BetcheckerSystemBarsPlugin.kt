@@ -14,6 +14,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 class BetcheckerSystemBarsPlugin : FlutterPlugin, ActivityAware {
 
     private var navBarBackground: View? = null
+    private var statusBarBackground: View? = null
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     }
@@ -22,22 +23,24 @@ class BetcheckerSystemBarsPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        setupNavigationBar(binding)
+        setupSystemBars(binding)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         navBarBackground = null
+        statusBarBackground = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        setupNavigationBar(binding)
+        setupSystemBars(binding)
     }
 
     override fun onDetachedFromActivity() {
         navBarBackground = null
+        statusBarBackground = null
     }
 
-    private fun setupNavigationBar(binding: ActivityPluginBinding) {
+    private fun setupSystemBars(binding: ActivityPluginBinding) {
         val activity = binding.activity
         val window = activity.window
 
@@ -47,8 +50,14 @@ class BetcheckerSystemBarsPlugin : FlutterPlugin, ActivityAware {
 
         val decorView = window.decorView as ViewGroup
 
-        val background = View(activity).apply {
+        val bottomBackground = View(activity).apply {
             setBackgroundColor(Color.parseColor("#EF8439"))
+            isClickable = false
+            isFocusable = false
+        }
+
+        val topBackground = View(activity).apply {
+            setBackgroundColor(Color.parseColor("#E5E5E5"))
             isClickable = false
             isFocusable = false
         }
@@ -57,8 +66,15 @@ class BetcheckerSystemBarsPlugin : FlutterPlugin, ActivityAware {
             decorView.removeView(it)
         }
 
-        navBarBackground = background
-        decorView.addView(background)
+        statusBarBackground?.let {
+            decorView.removeView(it)
+        }
+
+        navBarBackground = bottomBackground
+        statusBarBackground = topBackground
+
+        decorView.addView(bottomBackground)
+        decorView.addView(topBackground)
 
         decorView.setOnApplyWindowInsetsListener { _, insets ->
 
@@ -72,15 +88,32 @@ class BetcheckerSystemBarsPlugin : FlutterPlugin, ActivityAware {
                     insets.systemWindowInsetBottom
                 }
 
-            val params = FrameLayout.LayoutParams(
+            val topInset =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    insets.getInsets(
+                        WindowInsets.Type.statusBars()
+                    ).top
+                } else {
+                    @Suppress("DEPRECATION")
+                    insets.systemWindowInsetTop
+                }
+
+            bottomBackground.layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 bottomInset
             ).apply {
                 gravity = Gravity.BOTTOM
             }
 
-            background.layoutParams = params
-            background.bringToFront()
+            topBackground.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                topInset
+            ).apply {
+                gravity = Gravity.TOP
+            }
+
+            bottomBackground.bringToFront()
+            topBackground.bringToFront()
 
             insets
         }
